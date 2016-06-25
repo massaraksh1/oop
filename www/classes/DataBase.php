@@ -7,7 +7,14 @@ class DataBase
 	function __construct($host, $login, $pass, $dbname)
 	{
 		$this->db = mysql_connect($host,$login,$pass);
-		mysql_select_db($dbname);
+		if(!$this->db)
+		{
+			exit('No connection with database');
+		}
+		if(!mysql_select_db($dbname))
+		{
+			exit('database does not exist');
+		}
 		mysql_query('SET NAMES utf-8');
 	}	
 	
