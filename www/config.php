@@ -5,7 +5,8 @@ define ('LOGIN','oop');
 define ('PASSWORD','oop');
 define ('DBNAME','oop');
 
-// Путь к файлу
+// Путь к файлу или таблица бд
 define ('PATH','log.txt');
+define ('TABLE','logs');
 ?>
 

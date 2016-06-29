@@ -6,16 +6,17 @@ include 'classes/Logs.php';
 
 
 //$mess = new DataBase(HOST, LOGIN, PASSWORD, DBNAME);
-$mess = "hello";
+$mess = "hi people";
 
-$dbx = new Database(HOST, LOGIN, PASSWORD, DBNAME);
+
 //$dbx->create("Logs", "message TEXT NOT NULL, dates DATETIME");
 
-$logs = new Logs($mess);
+$logs = new LogsFile($mess);
+$logs->MessToLog();
 
-//$logs->messLogdb();
+
 //$logs->messLogfile(PATH);
-
+$dbx = new Database(HOST, LOGIN, PASSWORD, DBNAME);
 $arr = $dbx->select("Logs");
 for($i=0; $i < count($arr); $i++)
 {

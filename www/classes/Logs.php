@@ -1,32 +1,82 @@
 <?php
-
-class Logs
+abstract class Logs
 {
-	private $messages;
+	public $messages;
+	public $dates;
 	
 	function __construct($message)
 	{
 		$this->messages = $message;
+		$this->dates = date("Y-m-d H:i:s");
 	}
 	
-	function messlogdb()
+	abstract function MessToLog();
+}
+
+class LogsBD extends Logs
+{
+	
+	function MessToLog()
 	{
-		$db = new DataBase(HOST, LOGIN, PASSWORD, DBNAME);
 		$date = date("Y-m-d H:i:s");
 		$text = serialize($this->messages);
-		$db->insert("logs", "`message`, `dates`", "'{$this->messages}', '$date'");
-	}
-	
-	function messlogfile($link)
-	{
-		$date = date("Y-m-d H:i:s");
-		$mess[1][0] = $this->messages;
-		$mess[1][1] = $date;
+		$sql = "insert into `".TABLE."` (`message`, `dates`) values ('$text', '{$this->dates}')";
+		try {
+		$db = new PDO("mysql:host=".HOST.";dbname=".DBNAME, LOGIN, PASSWORD);
+		$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
 		
-		$fp = fopen($link, "a");
-		$text = serialize($mess) . "\r\n";
-		$go = fwrite($fp, $text);
-		fclose($fp);
+		$stmt = $db->exec($sql);
+		if (!$stmt) 
+		{
+			$log = new LogsFile($this->messages);
+			$log->MessToLog();
+			$log = null;
+			
+            $err = new LogsFile($db->errorInfo());
+			$err->MessToLog();
+			$err = null;
+        }
+		
+		}
+		catch(PDOException $e){
+			$log = new LogsFile($this->messages);
+			$log->MessToLog();
+			$log = null;
+			
+			$mess = 'Ошибка соединения: ' . $e->getMessage();
+            $err = new LogsFile($mess);
+			$err->MessToLog();
+			$err = null;
+		}
+	}
+}
+
+
+class LogsFile extends Logs
+{
+	function MessToLog()
+	{
+		$mess[1][0] = $this->messages;
+		$mess[1][1] = $this->dates;
+		
+		if (is_writable(PATH))
+		{
+			$fp = fopen(PATH, "a");
+			$text = serialize($mess) . "\r\n";
+		    $go = fwrite($fp, $text);
+		    fclose($fp);
+		}
+		else
+		{
+			$log = new LogsBD($this->messages);
+			$log->MessToLog();
+			$log = null;
+			
+			$mess = "Файл " . PATH . " недоступен для записи";
+			$err = new LogsBD($mess);
+			$err->MessToLog();
+			$err = null;
+		}
 	}
 }
 ?>
